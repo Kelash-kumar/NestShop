@@ -63,10 +63,21 @@ export class AuthService {
         user,
       };
     } catch (error) {
-      Logger.error('An error has occurred during registration');
-      throw new InternalServerErrorException(
-        'An error Occurred during registration',
-      );
+      // If it's already an HttpException, rethrow it
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+
+      // Log the actual error
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      Logger.error(`Registration failed: ${errorMessage}`, error instanceof Error ? error.stack : '');
+      
+      // Throw a proper exception with details
+      throw new InternalServerErrorException({
+        message: 'An error occurred during registration',
+        details: errorMessage,
+        timestamp: new Date().toISOString(),
+      });
     }
   }
 

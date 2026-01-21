@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  //apply global exception filter
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   //swagger base document metadata
   const config = new DocumentBuilder()
