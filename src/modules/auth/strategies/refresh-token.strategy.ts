@@ -35,7 +35,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
       throw new UnauthorizedException('Refresh Token not provided');
     }
 
-    const refreshToken = authHeader.replace('Bearer', '').trim();
+    const refreshToken = authHeader.replace(/^Bearer\s+/, '').trim();
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh is empty after extraction');
     }
@@ -56,8 +56,8 @@ export class RefreshTokenStrategy extends PassportStrategy(
     }
 
     const refreshTokenMatches = await bcrypt.compare(
-      user.refreshToken,
       refreshToken,
+      user.refreshToken,
     );
 
     if (!refreshTokenMatches) {
