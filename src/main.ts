@@ -2,64 +2,83 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { GlobalExceptionFilter } from './common/filters/global-exception.filter.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  //apply global exception filter
-  app.useGlobalFilters(new GlobalExceptionFilter());
-
-  //swagger base document metadata
-  const config = new DocumentBuilder()
-    .setTitle('Nest Ecommerce Api')
-    .setDescription('API documentation')
-    .setVersion('1.0')
-    .addBearerAuth() // optional if you're using JWT
-    .addServer('http://localhost:3000', 'Local Env')
-    .build();
-  //project Description
+  // Project description
   app.setGlobalPrefix('api/v1');
 
-  //use global validation pipe
+  // Set Global validation
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, //remove extra attribute or field from request
-      forbidNonWhitelisted: true, //convert req object compatible with dto
-      transform: true, //covert to dto
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
       transformOptions: {
         enableImplicitConversion: true,
       },
     }),
   );
 
-  //use cors for allow origin
-  const allowedOrigins = process.env.ALLOW_CORS_ORIGIN?.split(',') ?? [];
+  // Enable CORS
   app.enableCors({
-    origin: allowedOrigins,
+    origin: process.env.ALLOWED_ORIGINS?.split(',') ?? 'http://localhost:3000',
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
-  //api docs swagger
+  // Enable Swagger docs
+  const config = new DocumentBuilder()
+    .setTitle('API Documentation')
+    .setDescription('API documentation for the application')
+    .setVersion('1.0')
+    .addTag('auth', 'Authentication related endpoints')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Refresh-JWT',
+        description: 'Enter refresh JWT token',
+        in: 'header',
+      },
+      'JWT-refresh',
+    )
+    .addServer('http://localhost:3001', 'Development server')
+    .build();
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document, {
     swaggerOptions: {
-      persistAuthorization: true, // Keep token between refreshes
-      tagsSorter: 'alpha', // Sort tags
-      operationsSorter: 'alpha', // Sort endpoints inside tags
-      docExpansion: 'none', // Collapse sections by default (optional)
-      displayRequestDuration: true, // Shows request durations (optional)
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
     },
-    customSiteTitle: 'API Docs',
-    customfavIcon: 'https://swagger.io/docs/favicon-32x32.png', // optional icon
+    customSiteTitle: 'API Documentation',
+    customfavIcon: 'https://nestjs.com/img/logo-small.svg',
     customCss: `
-      .swagger-ui .topbar { display: none }
-      .swagger-ui .scheme-container { display: none }
-    `, // optional styling
+      .swagger-ui .topbar {display: none}
+      .swagger-ui .info { margin: 50px 0; }
+      .swagger-ui .info .title {color: #4A90E2;}
+    `,
   });
-  await app.listen(process.env.PORT ?? 3000);
+
+  await app.listen(process.env.PORT ?? 3001);
 }
-bootstrap().catch((err) => {
-  Logger.error('Error Occurred on starting app : ', err);
+bootstrap().catch((error) => {
+  Logger.error('Error starting server', error);
   process.exit(1);
 });
