@@ -1,0 +1,12 @@
+[96msrc/modules/category/category.controller.ts[0m:[93m40[0m:[93m65[0m - [91merror[0m[90m TS2304: [0mCannot find name 'CategoryResponseDto'.
+
+[7m40[0m   create(@Body() createCategoryDto: CreateCategoryDto): Promise<CategoryResponseDto> {
+[7m  [0m [91m                                                                ~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/modules/category/category.service.ts[0m:[93m13[0m:[93m18[0m - [91merror[0m[90m TS2349: [0mThis expression is not callable.
+  Type 'typeof import("D:/Learning-guide/Nestjs/nest-ecommerce/node_modules/slugify/slugify")' has no call signatures.
+
+[7m13[0m     const slug = slugify(originalSlug || name, { lower: true });
+[7m  [0m [91m                 ~~~~~~~[0m
+
+Found 2 error(s).
+
